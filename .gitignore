@@ -8,3 +8,5 @@ Listings/
 rte/
 objects/
 debugconfig/
+*stm32_diy
+*main.c
