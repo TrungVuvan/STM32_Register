@@ -98,7 +98,6 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
     {
         // Chọn mode Input hoặc Output cho PinNumber
         temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinMode << (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber * 4));
-				pGPIOHandle ->pGPIOx ->CRL &= 0x00;
         pGPIOHandle->pGPIOx->CRL |= temp;
         // Chọn trạng thái cho PinNumber
         temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinCNF << (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber * 4 + 2));
@@ -108,7 +107,6 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
     {
         // Chọn mode Input hoặc Output cho PinNumber
         temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinMode << ((pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber - 8) * 4));
-				pGPIOHandle ->pGPIOx ->CRH &= 0x00;
         pGPIOHandle->pGPIOx->CRH |= temp;
         // Chọn trạng thái cho PinNumber
         temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinCNF << ((pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber - 8) * 4 + 2));
@@ -121,54 +119,18 @@ void GPIO_Init_IT(GPIO_Handle_t *pGPIOHandle) {
 	RCC->APB2ENR |= 0x01;
 	// select EXTI line
 	uint8_t pin = pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber;
-	if (pin >= 0 && pin <= 3)
+	// tim STT thanh ghi can ghi vao
+	uint8_t EXTICRi = pin / 4;
+	// tim so bit can phai dich
+	uint8_t bit = (pin - 4 * EXTICRi) * 4;
+	if (pGPIOHandle->pGPIOx == GPIOA)
 	{
-		//EXTI line 0-3;
-		if (pGPIOHandle->pGPIOx == GPIOA)
-		{
-			AFIO->EXTICR1 |= (0x00 << pin);
+		AFIO->EXTICR[EXTICRi + 1] |= (0x00 << bit);
 
-		}
-		else if (pGPIOHandle->pGPIOx == GPIOB)
-		{
-			AFIO->EXTICR1 |= (0x01 << pin);
-		}
 	}
-	else if (pin >= 4 && pin <= 7)
+	else if (pGPIOHandle->pGPIOx == GPIOB)
 	{
-		//EXTI line 4 - 7
-		if (pGPIOHandle->pGPIOx == GPIOA)
-		{
-			AFIO->EXTICR2 |= (0x00 << pin);
-		}
-		else if (pGPIOHandle->pGPIOx == GPIOB)
-		{
-			AFIO->EXTICR2 |= (0x01 << pin);
-		}
-	}
-	else if (pin >= 8 && pin <= 11)
-	{
-		// EXTI line 8 - 11
-		if (pGPIOHandle->pGPIOx == GPIOA)
-		{
-			AFIO->EXTICR3 |= (0x00 << pin);
-		}
-		else if (pGPIOHandle->pGPIOx == GPIOB)
-		{
-			AFIO->EXTICR3 |= (0x01 << pin);
-		}
-	}
-	else if (pin >= 12)
-	{
-		//EXTi line 12- 15
-		if (pGPIOHandle->pGPIOx == GPIOA)
-		{
-			AFIO->EXTICR4 |= (0x00 << pin);
-		}
-		else if (pGPIOHandle->pGPIOx == GPIOB)
-		{
-			AFIO->EXTICR4 |= (0x01 << pin);
-		}
+		AFIO->EXTICR[EXTICRi + 1] |= (0x01 << bit);
 	}
 	//interrupt request from line "pin" is not masked
 	EXTI ->IMR |= (1 << pin);
@@ -278,33 +240,17 @@ void GPIO_EXTI_Enable(uint8_t IRQNumber, uint8_t EnorDi)
 {
 	if(EnorDi == ENABLE)
 	{
-		if(IRQNumber >= 0 && IRQNumber <= 31)
-		{
-			NVIC ->ISER[0] |= (1 << IRQNumber);
-		}
-		else if(IRQNumber >= 32 && IRQNumber <= 63)
-		{
-			NVIC ->ISER[1] |= (1 << (IRQNumber % 32));
-		}
-		else if(IRQNumber >= 64 && IRQNumber <= 95)
-		{
-			NVIC ->ISER[2] |= (1 << (IRQNumber % 64));
-		}
+		// tim chi so cua mang thanh ghi ISER
+		uint8_t ISERi = IRQNumber / 32;
+		// tim so bit can phai dich
+		uint8_t bit = IRQNumber % 32;
+		NVIC ->ISER[ISERi] |= (1 << bit);
 	}
 	else
 	{
-		if(IRQNumber >= 0 && IRQNumber <= 31)
-		{
-			NVIC ->ICER[0] |= (1 << IRQNumber);
-		}
-		else if(IRQNumber >= 32 && IRQNumber <= 63)
-		{
-			NVIC ->ICER[1] |= (1 << (IRQNumber % 32));
-		}
-		else if(IRQNumber >= 64 && IRQNumber <= 95)
-		{
-			NVIC ->ICER[2] |= (1 << (IRQNumber % 64));
-		}
+		uint8_t ICERi = IRQNumber / 32;
+		uint8_t bit = IRQNumber %32;
+		NVIC ->ICER[ICERi] |= (1 << bit);
 	}
 }
 
@@ -312,6 +258,5 @@ void GPIO_EXTI_PriConfig(uint8_t IRQNumber, uint8_t EXTIPri, uint8_t EXTISubPri)
 {
 	NVIC ->IPR[IRQNumber / 4] |= ((uint8_t)(EXTIPri << 4 | EXTISubPri)) << (IRQNumber % 4);
 }
-//void GPIO_IRQHandling(uint8_t PinNumber);
 
 #endif

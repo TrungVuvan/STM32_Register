@@ -103,10 +103,7 @@ typedef struct
 {
 	__vo uint32_t EVCR;
 	__vo uint32_t MAPR;
-	__vo uint32_t EXTICR1;
-	__vo uint32_t EXTICR2;
-	__vo uint32_t EXTICR3;
-	__vo uint32_t EXTICR4;
+	__vo uint32_t EXTICR[4];
 	__vo uint32_t MAPR2;
 }AFIO_RegDef_t;
                                 /* RCC structure */
