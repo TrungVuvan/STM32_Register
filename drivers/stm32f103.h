@@ -22,7 +22,7 @@
 /* AHB and APBx Bus Peripheral base address */
 #define NVIC_BASEADDR           	0xE000E100
 #define PERIPH_BASEADDR             0x40000000U
-#define APB1PERIPH_BASEADDR         PERIPH_BASE
+#define APB1PERIPH_BASEADDR         PERIPH_BASEADDR
 #define APB2PERIPH_BASEADDR         0x40010000U
 #define AHBPERIPH_BASEADDR          0x40018000U
 
@@ -148,6 +148,22 @@ typedef struct
 	__vo uint32_t STIR;
 }NVIC_RegDef_t;
 
+											/* Serial Communication */
+											
+															/* SPI */
+typedef struct 
+{
+	__vo uint32_t CR1;
+	__vo uint32_t CR2;
+	__vo uint32_t SR;
+	__vo uint32_t DR;
+	__vo uint32_t CRCPR;
+	__vo uint32_t RXCRCR;
+	__vo uint32_t TXCRCR;
+	__vo uint32_t I2SCFGR;
+	__vo uint32_t I2SPR;
+}SPI_RegDef_t;
+
 //////////////////////////////////////////////////////////////////////////////////
                                 /* peripheral definitions */
 //////////////////////////////////////////////////////////////////////////////////
@@ -167,5 +183,11 @@ RCC_RegDef_t * RCC = (RCC_RegDef_t *)RCC_BASEADDR;
 
 								/* NVIC definitions */
 NVIC_RegDef_t * NVIC = (NVIC_RegDef_t *)NVIC_BASEADDR;
+
+											/* SPI */
+SPI_RegDef_t * SPI1 = (SPI_RegDef_t *)SPI1_BASEADDR;
+SPI_RegDef_t * SPI2 = (SPI_RegDef_t *)SPI2_BASEADDR;
+SPI_RegDef_t * SPI3 = (SPI_RegDef_t *)SPI3_BASEADDR;
+
 
 #endif
