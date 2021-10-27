@@ -1,55 +1,83 @@
 #include "stm32f103_gpio.h"
-void mdelaym(void);
-void EXTI0_IRQHandler(void);
-
+#include "stm32f103_spi.h"
+#include <string.h>
+void Delay_Timer2_Config(void);
+void delay_ms(uint32_t time);
+void SPI_GPIOConfig();
+/* 
+		SPI1
+* PA4 - NSS
+	PA5 - SCK
+	PA6 - MISO
+	PA7 - MOSI
+*/
 
 int main(void)
 {
-	// khai bao bien
-	GPIO_PinConfig_t pA, pC;
-	GPIO_Handle_t led, it;
+	char data[] = "From SEEE-HUST with love";
 	
-	pA.GPIO_ITMode = IT_MODE_FT; // ngat suon xuong
-	pA.GPIO_PinNumber = 0;       // ngat line 0
-	pA.GPIO_PinMode = 0;				 // mode input pullup/pulldown
-	pA.GPIO_PinCNF = 2;
-	it.GPIO_PinConfig = pA;
-	it.pGPIOx = GPIOA;					 // chon chan A0 lam chan ngat
-	GPIO_PeriCLKControl(GPIOA, ENABLE); // enable clock GPIOA
-	GPIO_Init(&it);					//khoi tao GPIO
-	GPIO_Init_IT(&it);			// khoi tao ngat ngoai
-	GPIO_EXTI_Enable(6, ENABLE);		// enable ngat
+	SPI_Handle_t pSPI1;
 	
-	// configure pin PC13 as output, push/pull
-	pC.GPIO_PinNumber = 13;
-	pC.GPIO_PinMode = 3;
-	pC.GPIO_PinCNF = 0;
-	led.GPIO_PinConfig = pC;
-	led.pGPIOx = GPIOC;
-	GPIO_PeriCLKControl(GPIOC, ENABLE);
-	GPIO_Init(&led);
-	GPIO_WriteToOutputPin(GPIOC, 13, RESET);  // reset pin PC13
-    while(1)
-    {
+	pSPI1.pSPIx = SPI1;
+	pSPI1.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FD;
+	pSPI1.SPIConfig.SPI_DeviceMode = 1;
+	pSPI1.SPIConfig.SPI_SclkSpeed = SPI_SPEED_DIV_64;
+	pSPI1.SPIConfig.SPI_DFF = 0;
+	pSPI1.SPIConfig.SPI_CPHA = 0;
+	pSPI1.SPIConfig.SPI_CPOL = 0;
+	pSPI1.SPIConfig.SPI_SSM = 1;
+	
+	SPI_GPIOConfig();
+	SPI_PeriCLKControl(SPI1, ENABLE);
+	SPI_Init(&pSPI1);
+	SPI_SendData(SPI1, data, strlen(data));
+	Delay_Timer2_Config();
+  while(1)
+  {
 				
-    }
-    return 0;
+  }
+  return 0;
 }
 
-void mdelaym(void)
+void Delay_Timer2_Config(void)
 {
-	for(int i = 0; i < 1000; i++)
-		for(int j = 0; j < 1000; j++)
-		{
-
-		}
+	RCC ->APB1ENR |= (1 << 0);    // enable clock for timer2
+	TIM2 ->ARR = 0xFFFF;      // TIMx auto-reload register TIMx_ARR
+	TIM2 ->PSC = 72 - 1;      // PSC[15:0]: prescaler value
+	TIM2 ->CR1 = 0x01;        // bit 0 CEN: counter enable and 0: counter used as upcounter
+	TIM2 ->EGR = 0x01;        // generate an update event to reload the Prescaler and repetition counter value immediately
 }
 
-void EXTI0_IRQHandler(void)
+void delay_ms(uint32_t time)
 {
-	if(EXTI ->PR & (1 << 0))   
+	while(time)
 	{
-		EXTI ->PR |= (1 << 0); // xoa co pending bang cach ghi 1 vao
-		GPIOC ->ODR ^= 0xFFFF;
+		TIM2 ->CNT = 0U;
+		while((TIM2 ->CNT) < 1000);
+		time--;
 	}
+}
+
+void SPI_GPIOConfig()
+{
+	GPIO_PeriCLKControl(GPIOA, ENABLE);
+	GPIO_PinConfig_t SPIpin;
+	GPIO_Handle_t pSPI;
+	
+	SPIpin.GPIO_PinMode = 3;
+	SPIpin.GPIO_PinCNF = 2;
+	pSPI.pGPIOx = GPIOA;
+	pSPI.GPIO_PinConfig = SPIpin;
+	//NSS
+	pSPI.GPIO_PinConfig.GPIO_PinNumber = 4;
+	GPIO_Init(&pSPI);
+	//SCK
+	pSPI.GPIO_PinConfig.GPIO_PinNumber = 5;
+	GPIO_Init(&pSPI);
+	//MISO
+	pSPI.GPIO_PinConfig.GPIO_PinNumber = 6;
+	GPIO_Init(&pSPI);
+	//MOSI
+	pSPI.GPIO_PinConfig.GPIO_PinNumber = 7;
+	GPIO_Init(&pSPI);
 }

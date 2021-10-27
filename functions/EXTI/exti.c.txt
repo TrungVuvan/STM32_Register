@@ -1,6 +1,8 @@
 #include "stm32f103_gpio.h"
+#include "stm32f103_spi.h"
 
-void mdelaym(void);
+void Delay_Timer2_Config(void);
+void delay_ms(uint32_t time);
 void EXTI0_IRQHandler(void);
 
 
@@ -10,6 +12,7 @@ int main(void)
 	GPIO_PinConfig_t pA, pC;
 	GPIO_Handle_t led, it;
 	
+
 	pA.GPIO_ITMode = IT_MODE_FT; // ngat suon xuong
 	pA.GPIO_PinNumber = 0;       // ngat line 0
 	pA.GPIO_PinMode = 0;				 // mode input pullup/pulldown
@@ -18,7 +21,7 @@ int main(void)
 	it.pGPIOx = GPIOA;					 // chon chan A0 lam chan ngat
 	GPIO_PeriCLKControl(GPIOA, ENABLE); // enable clock GPIOA
 	GPIO_Init(&it);					//khoi tao GPIO
-	GPIO_Init_IT(&it);			// khoi tao ngat ngoai
+	GPIO_Init_EXTI(&it);			// khoi tao ngat ngoai
 	GPIO_EXTI_Enable(6, ENABLE);		// enable ngat
 	
 	// configure pin PC13 as output, push/pull
@@ -30,21 +33,36 @@ int main(void)
 	GPIO_PeriCLKControl(GPIOC, ENABLE);
 	GPIO_Init(&led);
 	GPIO_WriteToOutputPin(GPIOC, 13, RESET);  // reset pin PC13
+	Delay_Timer2_Config();
     while(1)
     {
+				GPIO_ToggleOutputPin(GPIOC, 13);
+				delay_ms(1000);
+				//GPIO_ToggleOutputPin(GPIOC, 13);
 				
     }
     return 0;
 }
 
-void mdelaym(void)
+void Delay_Timer2_Config(void)
 {
-	for(int i = 0; i < 1000; i++)
-		for(int j = 0; j < 1000; j++)
-		{
-
-		}
+	RCC ->APB1ENR |= (1 << 0);    // enable clock for timer2
+	TIM2 ->ARR = 0xFFFF;      // TIMx auto-reload register TIMx_ARR
+	TIM2 ->PSC = 72 - 1;      // PSC[15:0]: prescaler value
+	TIM2 ->CR1 = 0x01;        // bit 0 CEN: counter enable and 0: counter used as upcounter
+	TIM2 ->EGR = 0x01;        // generate an update event to reload the Prescaler and repetition counter value immediately
 }
+
+void delay_ms(uint32_t time)
+{
+	while(time)
+	{
+		TIM2 ->CNT = 0U;
+		while((TIM2 ->CNT) < 1000);
+		time--;
+	}
+}
+
 
 void EXTI0_IRQHandler(void)
 {

@@ -1,5 +1,5 @@
-#ifndef STM32F103_H_
-#define STM32F103_H_
+#ifndef INC_STM32F103_H_
+#define INC_STM32F103_H_
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@
 #define SRAM                    SRAM1_BASEADDR
 
 /* AHB and APBx Bus Peripheral base address */
-#define NVIC_BASEADDR           	0xE000E100
+#define NVIC_BASEADDR           		0xE000E100
 #define PERIPH_BASEADDR             0x40000000U
 #define APB1PERIPH_BASEADDR         PERIPH_BASEADDR
 #define APB2PERIPH_BASEADDR         0x40010000U
@@ -164,30 +164,59 @@ typedef struct
 	__vo uint32_t I2SPR;
 }SPI_RegDef_t;
 
+typedef struct
+{
+	__vo uint32_t CR1;
+	__vo uint32_t CR2;
+	__vo uint32_t SMCR;
+	__vo uint32_t DIER;
+	__vo uint32_t SR;
+	__vo uint32_t EGR;
+	__vo uint32_t CCMR1;
+	__vo uint32_t CCMR2;
+	__vo uint32_t CCER;
+	__vo uint32_t CNT;
+	__vo uint32_t PSC;
+	__vo uint32_t ARR;
+	uint32_t RESERVED0;
+	__vo uint32_t CCR1;
+	__vo uint32_t CCR2;
+	__vo uint32_t CCR3;
+	__vo uint32_t CCR4;
+	uint32_t RESERVED1;
+	__vo uint32_t DCR;
+	__vo uint32_t DMAR;
+}TIMGP_RegDef_t;
+
+
 //////////////////////////////////////////////////////////////////////////////////
                                 /* peripheral definitions */
 //////////////////////////////////////////////////////////////////////////////////
 
+
 								/* GPIO definitions */
-GPIO_RegDef_t * GPIOA = (GPIO_RegDef_t *)GPIOA_BASEADDR;
-GPIO_RegDef_t * GPIOB = (GPIO_RegDef_t *)GPIOB_BASEADDR;
-GPIO_RegDef_t * GPIOC = (GPIO_RegDef_t *)GPIOC_BASEADDR;
+#define GPIOA  				((GPIO_RegDef_t*)GPIOA_BASEADDR)
+#define GPIOB  				((GPIO_RegDef_t*)GPIOB_BASEADDR)
+#define GPIOC  				((GPIO_RegDef_t*)GPIOC_BASEADDR)
 
-AFIO_RegDef_t * AFIO = (AFIO_RegDef_t *)AFIO_BASEADDR;
+#define AFIO 					((AFIO_RegDef_t *)AFIO_BASEADDR)
 
-								/* RCC definitions */
-EXTI_RegDef_t * EXTI = (EXTI_RegDef_t *)EXTI_BASEADDR;
 
-                                /* RCC definitions */
-RCC_RegDef_t * RCC = (RCC_RegDef_t *)RCC_BASEADDR;
+								/* EXTI definitions */
+#define EXTI  				((EXTI_RegDef_t *)EXTI_BASEADDR)
 
 								/* NVIC definitions */
-NVIC_RegDef_t * NVIC = (NVIC_RegDef_t *)NVIC_BASEADDR;
+#define NVIC 					((NVIC_RegDef_t *)NVIC_BASEADDR)
 
 											/* SPI */
-SPI_RegDef_t * SPI1 = (SPI_RegDef_t *)SPI1_BASEADDR;
-SPI_RegDef_t * SPI2 = (SPI_RegDef_t *)SPI2_BASEADDR;
-SPI_RegDef_t * SPI3 = (SPI_RegDef_t *)SPI3_BASEADDR;
+#define SPI1  				((SPI_RegDef_t *)SPI1_BASEADDR)
+#define SPI2  				((SPI_RegDef_t *)SPI2_BASEADDR)
+#define SPI3 				  ((SPI_RegDef_t *)SPI3_BASEADDR)
 
+                                /* RCC definitions */
+#define RCC 					((RCC_RegDef_t *)RCC_BASEADDR)
+
+                                /* TIMER definitions */
+#define TIM2 					((TIMGP_RegDef_t *)TIM2_BASEADDR)
 
 #endif
